@@ -1,5 +1,5 @@
 
-import easywallbox.blemap as bmap
+import blemap as bmap
 
 
 def setUserLimit(limit):
