@@ -47,7 +47,8 @@ def mqtt_on_message(client, userdata, msg):
     message = msg.payload.decode()
     if(topic == "easywallbox/dpm"):
         if(message == "on"):
-            ble_send_rx(commands.setDpmOn())
+            asyncio.ensure_future(ble_send_rx(commands.setDpmOn()))
+            
             #data = bytes(commands.setDpmOff,"utf-8")
             #await ble_client.write_gatt_char(BLUETOOTH_WALLBOX_RX, data)
 
@@ -103,10 +104,10 @@ async def easywallbox():
         log.info("BLE AUTH START: %s", ble_pin)
         
         await ble_send_rx(commands.authBle(ble_pin))
-        await asyncio.sleep(5)
+        #await asyncio.sleep(5)
 
         while True:
-            time.sleep(1)
+            asyncio.sleep(1)
             #loop forever
 
         
