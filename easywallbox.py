@@ -45,7 +45,7 @@ async def easywallbox(address):
         await client.start_notify(BLUETOOTH_WALLBOX_TX, handle_rx) #TX NOTIFY
         await client.start_notify(BLUETOOTH_WALLBOX_ST, handle_st) #ST NOTIFY (CANAL BUSMODE)
         
-        data = commands.authBle("9844")
+        data = bytes(commands.authBle("9844"),"utf-8")
         await client.write_gatt_char(BLUETOOTH_WALLBOX_RX, data)
         
         
