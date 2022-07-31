@@ -53,6 +53,7 @@ def mqtt_on_message(client, userdata, msg):
 
 
 async def ble_send_rx(data):
+    global ble_client 
     data = bytes(data,"utf-8")
     await ble_client.write_gatt_char(BLUETOOTH_WALLBOX_RX, data)
     log.info("ble sent: %s", data)
@@ -85,7 +86,9 @@ async def easywallbox():
 
     log.info("Connecting BLE...")
     #async with BleakClient(ble_address, disconnected_callback=ble_handle_disconnect) as ble_client:
-    async with BleakClient(ble_address) as ble_client:
+    async with BleakClient(ble_address) as client:
+        global ble_client 
+        ble_client = client;
         log.info(f"Connected: {ble_client.is_connected}")
 
         paired = await ble_client.pair(protection_level=2)
