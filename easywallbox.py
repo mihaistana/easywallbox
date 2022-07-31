@@ -56,9 +56,9 @@ def mqtt_subscribe(client):
     client.subscribe([("easywallbox/dpm",0), ("easywallbox/start",0), ("easywallbox/stop",0), ("easywallbox/limit",0)])
 
 def mqtt_on_message(client, userdata, msg):
-    log.info(f"Message received [{msg.topic}]: {msg.payload}")
     topic = msg.topic
     message = msg.payload.decode()
+    log.info(f"Message received [{topic}]: {message}")
     if(topic == "easywallbox/dpm"):
         if(message == "on"):
             queue.put_nowait(commands.setDpmOn())
