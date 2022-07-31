@@ -1,11 +1,23 @@
+#!/usr/bin/env python3
+import paho.mqtt.client
+import time
 import sys
 import asyncio
 import commands as commands
-
+import mqtt
+import ble
+import os
 from bleak import BleakClient
 
-ADDRESS = "8C:F6:81:AD:B8:3E" #MAC ADDESS easywallbox
-PIN = "9844"
+import logging
+FORMAT = ('%(asctime)-15s %(threadName)-15s '
+          '%(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
+logging.basicConfig(format=FORMAT)
+log = logging.getLogger()
+log.setLevel(logging.INFO)
+
+ble_address = os.getenv('BLE_ADDRESS', '8C:F6:81:AD:B8:3E')
+ble_pin = os.getenv('BLE_PIN', '9844')
 
 BLUETOOTH_WALLBOX_RX = "a9da6040-0823-4995-94ec-9ce41ca28833";
 BLUETOOTH_WALLBOX_SERVICE = "331a36f5-2459-45ea-9d95-6142f0c4b307";
@@ -13,54 +25,106 @@ BLUETOOTH_WALLBOX_ST = "75A9F022-AF03-4E41-B4BC-9DE90A47D50B";
 BLUETOOTH_WALLBOX_TX = "a73e9a10-628f-4494-a099-12efaf72258f";
 BLUETOOTH_WALLBOX_UUID ="0A8C44F5-F80D-8141-6618-2564F1881650";
 
+mqtt_host = os.getenv('MQTT_HOST', '192.168.2.70')
+mqtt_port = os.getenv('MQTT_PORT', 1883)
+mqtt_username = os.getenv('MQTT_PORT', "")
+mqtt_password = os.getenv('MQTT_PORT', "")
+
+def mqtt_on_connect(client, userdata, flags, rc):
+    # This will be called once the client connects
+    if rc == 0:
+        client.connected_flag=True
+        log.info("Connected to MQTT Broker!")
+        mqtt_subscribe(client)
+    else:
+        log.info("Failed to connect, return code %d\n", rc)
+    
+
+def mqtt_subscribe(client):
+    client.subscribe([("easywallbox/dpm",0), ("easywallbox/start",0), ("easywallbox/stop",0), ("easywallbox/limit",0)])
+
+def mqtt_on_message(client, userdata, msg):
+    log.info(f"Message received [{msg.topic}]: {msg.payload}")
+    if(msg.topic == "easywallbox/dpm"):
+        if(msg.payload == "on"):
+            ble_send(commands.setDpmOff)
+            #data = bytes(commands.setDpmOff,"utf-8")
+            #await ble_client.write_gatt_char(BLUETOOTH_WALLBOX_RX, data)
+
+
+def ble_send(data):
+    data = bytes(data,"utf-8")
+    await ble_client.write_gatt_char(BLUETOOTH_WALLBOX_RX, data)
+
 rx_buffer = "";
 st_buffer = "";
 
 
-def handle_rx(_: int, data: bytearray):
+def ble_handle_rx(_: int, data: bytearray):
     global rx_buffer
     rx_buffer += data.decode()
     if "\n" in rx_buffer:
-        print("rx received:", rx_buffer)
+        log.info("rx received:", rx_buffer)
         rx_buffer = "";
 
-def handle_st(_: int, data: bytearray):
+def ble_handle_st(_: int, data: bytearray):
     global st_buffer
     st_buffer += data.decode()
     if "\n" in st_buffer:
-        print("st received:", st_buffer)
+        log.info("st received:", st_buffer)
         st_buffer = "";
 
-def handle_disconnect(_: BleakClient):
-    print("Device was disconnected, goodbye.")
+def ble_handle_disconnect(_: BleakClient):
+    log.info("Device was disconnected, goodbye.")
     # cancelling all tasks effectively ends the program
     for task in asyncio.all_tasks():
         task.cancel()
 
-async def easywallbox(address):
+async def easywallbox():
 
-    #async with BleakClient(address, disconnected_callback=handle_disconnect) as client:
-    async with BleakClient(address) as client:
-        print(f"Connected: {client.is_connected}")
+    log.info("Connecting BLE...")
+    #async with BleakClient(ble_address, disconnected_callback=ble_handle_disconnect) as ble_client:
+    async with BleakClient(ble_address) as ble_client:
+        log.info(f"Connected: {ble_client.is_connected}")
 
-        paired = await client.pair(protection_level=2)
-        print(f"Paired: {paired}")
+        paired = await ble_client.pair(protection_level=2)
+        log.info(f"Paired: {paired}")
 
-        await client.start_notify(BLUETOOTH_WALLBOX_TX, handle_rx) #TX NOTIFY
-        print("TX NOTIFY STARTED")
-        await client.start_notify(BLUETOOTH_WALLBOX_ST, handle_st) #ST NOTIFY (CANAL BUSMODE)
-        print("ST NOTIFY STARTED")
+        await ble_client.start_notify(BLUETOOTH_WALLBOX_TX, ble_handle_rx) #TX NOTIFY
+        log.info("TX NOTIFY STARTED")
+        await ble_client.start_notify(BLUETOOTH_WALLBOX_ST, ble_handle_st) #ST NOTIFY (CANAL BUSMODE)
+        log.info("ST NOTIFY STARTED")
 
-        data = bytes(commands.authBle(PIN),"utf-8")
-        resp = await client.write_gatt_char(BLUETOOTH_WALLBOX_RX, data, response=True)
-        print("BLE AUTH START:", PIN)
-        print("BLE AUTH RESPONSE:", resp)
-        await asyncio.sleep( 0.5, loop=asyncio.get_event_loop() )
+        log.info("BLE AUTH START:", ble_pin)
+        data = bytes(commands.authBle(ble_pin),"utf-8")
+        resp = await ble_client.write_gatt_char(BLUETOOTH_WALLBOX_RX, data, response=True)
+        await asyncio.sleep(5)
+
+        #while True:
+            #loop forever
         
+paho.mqtt.client.Client.connected_flag=False#create flag in class
 
-if __name__ == "__main__":
+clientMQTT = paho.mqtt.client.Client("mqtt-easywallbox") # client ID "mqtt-test"
+clientMQTT.on_connect = mqtt_on_connect
+clientMQTT.on_message = mqtt_on_message
+#clientMQTT.loop_start()
+log.info("Connecting to MQTT broker: %s ",mqtt_host)
+clientMQTT.username_pw_set(username=mqtt_username,password=mqtt_password)
+clientMQTT.connect(mqtt_host, mqtt_port)
+clientMQTT.loop_forever()  # Start networking daemon
+
+while not clientMQTT.connected_flag: #wait in loop
+    log.info("...")
+time.sleep(1)
+log.info("START BLE...")
+
+asyncio.run(easywallbox())
+
+#clientMQTT.loop_stop()
+#if __name__ == "__main__":
     #try:
-    asyncio.run(easywallbox(sys.argv[1] if len(sys.argv) == 2 else ADDRESS))
+    #asyncio.run(easywallbox())
     #except asyncio.CancelledError:
         # task is cancelled on disconnect, so we ignore this error
     #    pass
