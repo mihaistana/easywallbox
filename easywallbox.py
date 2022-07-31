@@ -18,6 +18,7 @@ st_buffer = "";
 def handle_rx(_: int, data: bytearray):
     global rx_buffer
     rx_buffer +=  str(data)
+    print("rx buffer:", rx_buffer)
     if "\n" in rx_buffer:
         print("rx received:", rx_buffer)
         rx_buffer = "";
