@@ -125,7 +125,7 @@ async def easywallbox():
             line = await queue.get()
             log.info("Send ble from queue: %s" ,line)
             await ble_send_rx(line)
-            #await asyncio.sleep(1)
+            await asyncio.sleep(0.5)
             #loop forever
 
         
