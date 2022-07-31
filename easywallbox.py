@@ -51,8 +51,4 @@ async def easywallbox(address):
         
 
 if __name__ == "__main__":
-    try:
-        asyncio.run(easywallbox(sys.argv[1] if len(sys.argv) == 2 else ADDRESS))
-    except asyncio.CancelledError:
-        # task is cancelled on disconnect, so we ignore this error
-        pass
+    easywallbox(sys.argv[1] if len(sys.argv) == 2 else ADDRESS)
