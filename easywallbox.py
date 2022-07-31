@@ -5,6 +5,7 @@ import commands as commands
 from bleak import BleakClient
 
 ADDRESS = "8C:F6:81:AD:B8:3E" #MAC ADDESS easywallbox
+PIN = "9844"
 
 BLUETOOTH_WALLBOX_RX = "a9da6040-0823-4995-94ec-9ce41ca28833";
 BLUETOOTH_WALLBOX_SERVICE = "331a36f5-2459-45ea-9d95-6142f0c4b307";
@@ -50,11 +51,10 @@ async def easywallbox(address):
         await client.start_notify(BLUETOOTH_WALLBOX_ST, handle_st) #ST NOTIFY (CANAL BUSMODE)
         print("ST NOTIFY STARTED")
 
-        data = bytes(commands.authBle("9844"),"utf-8")
+        data = bytes(commands.authBle(PIN),"utf-8")
         await client.write_gatt_char(BLUETOOTH_WALLBOX_RX, data)
-        print("sent:", data)
-
-        #await asyncio.sleep(5)
+        print("BLE AUTH START: ", PIN)
+        await asyncio.sleep(10)
         
 
 if __name__ == "__main__":
