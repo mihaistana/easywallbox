@@ -137,7 +137,7 @@ async def main():
         print(ble_command)
 
         if(ble_command != None):
-            queue.put_nowait(commands.setDpmOn())
+            queue.put_nowait(ble_command)
 
 
     mqtt.Client.connected_flag=False
