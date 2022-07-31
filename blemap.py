@@ -1,7 +1,4 @@
 
-
-
-
 WALLBOX_ANSWERS = { 
     "ANSWER_ERRAUTH" : "$ERR,AUTH\n", 
     "ANSWER_ERRBUSY" : "$ERR,BUSY\n", 
@@ -45,4 +42,6 @@ WALLBOX_EPROM = {
     "GET_SAFE_LIMIT" : "$EEP,READ,IDX,156\n",
     "GET_DPM_STATUS" : "$EEP,READ,IDX,178\n"
 }
+
+
 

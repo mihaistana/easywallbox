@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
-import paho.mqtt.client
-import time
-import sys
 import asyncio
-import commands as commands
-import os
+import sys
 from bleak import BleakClient
-
+import paho.mqtt.client as mqtt
+import os
+import commands
+import mqttmap
+import time
+import random
 import logging
 FORMAT = ('%(asctime)-15s %(threadName)-15s '
           '%(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
@@ -14,149 +15,169 @@ logging.basicConfig(format=FORMAT)
 log = logging.getLogger()
 log.setLevel(logging.INFO)
 
-ble_address = os.getenv('BLE_ADDRESS', '8C:F6:81:AD:B8:3E')
-ble_pin = os.getenv('BLE_PIN', '9844')
+mqttClient = None
 
-BLUETOOTH_WALLBOX_RX = "a9da6040-0823-4995-94ec-9ce41ca28833";
-BLUETOOTH_WALLBOX_SERVICE = "331a36f5-2459-45ea-9d95-6142f0c4b307";
-BLUETOOTH_WALLBOX_ST = "75A9F022-AF03-4E41-B4BC-9DE90A47D50B";
-BLUETOOTH_WALLBOX_TX = "a73e9a10-628f-4494-a099-12efaf72258f";
-BLUETOOTH_WALLBOX_UUID ="0A8C44F5-F80D-8141-6618-2564F1881650";
+class EasyWallbox:
 
-mqtt_host = os.getenv('MQTT_HOST', '192.168.2.70')
-mqtt_port = os.getenv('MQTT_PORT', 1883)
-mqtt_username = os.getenv('MQTT_PORT', "")
-mqtt_password = os.getenv('MQTT_PORT', "")
+    WALLBOX_ADDRESS = os.getenv('WALLBOX_ADDRESS', '8C:F6:81:AD:B8:3E')
+    WALLBOX_PIN = os.getenv('WALLBOX_PIN', '9844')
 
-queue = asyncio.Queue()
+    WALLBOX_RX = "a9da6040-0823-4995-94ec-9ce41ca28833";
+    WALLBOX_SERVICE = "331a36f5-2459-45ea-9d95-6142f0c4b307";
+    WALLBOX_ST = "75A9F022-AF03-4E41-B4BC-9DE90A47D50B";
+    WALLBOX_TX = "a73e9a10-628f-4494-a099-12efaf72258f";
+    WALLBOX_UUID ="0A8C44F5-F80D-8141-6618-2564F1881650";
 
-def synchronize_async_helper(to_await):
-    async_response = []
+    def __init__(self, queue):
+        self._client = BleakClient(self.WALLBOX_ADDRESS)
+        self._queue = queue
 
-    async def run_and_capture_result():
-        r = await to_await
-        async_response.append(r)
+    def is_connected(self):
+        return self._client.is_connected()
 
-    loop = asyncio.get_event_loop()
-    coroutine = run_and_capture_result()
-    loop.run_until_complete(coroutine)
-    return async_response[0]
+    async def write(self, data):
+        if isinstance(data, str):
+            data = bytearray(data, 'utf-8')
+        await self._client.write_gatt_char(self.WALLBOX_RX, data)
+        log.info("ble write: %s", data)
 
-def mqtt_on_connect(client, userdata, flags, rc):
-    # This will be called once the client connects
-    if rc == 0:
-        client.connected_flag=True
-        log.info("Connected to MQTT Broker!")
-        mqtt_subscribe(client)
-    else:
-        log.info("Failed to connect, return code %d\n", rc)
-    
+    async def connect(self):
+        log.info("Connecting BLE...")
+        await self._client.connect()
+        log.info(f"Connected on {self.WALLBOX_ADDRESS}: {self._client.is_connected}")
 
-def mqtt_subscribe(client):
-    client.subscribe([("easywallbox/dpm",0), ("easywallbox/start",0), ("easywallbox/stop",0), ("easywallbox/limit",0)])
-
-def mqtt_on_message(client, userdata, msg):
-    topic = msg.topic
-    message = msg.payload.decode()
-    log.info(f"Message received [{topic}]: {message}")
-    if(topic == "easywallbox/dpm"):
-        if(message == "on"):
-            queue.put_nowait(commands.setDpmOn())
-            #data = bytes(commands.setDpmOff,"utf-8")
-            #await ble_client.write_gatt_char(BLUETOOTH_WALLBOX_RX, data)
-
-
-async def ble_send_rx(data):
-    global ble_client 
-    data = bytes(data,"utf-8")
-    await ble_client.write_gatt_char(BLUETOOTH_WALLBOX_RX, data)
-    log.info("ble sent: %s", data)
-
-rx_buffer = "";
-st_buffer = "";
-
-
-def ble_handle_rx(_: int, data: bytearray):
-    global rx_buffer
-    rx_buffer += data.decode()
-    if "\n" in rx_buffer:
-        log.info("rx received: %s", rx_buffer)
-        clientMQTT.publish(topic="easywallbox/message", payload=rx_buffer, qos=1, retain=False)
-        rx_buffer = "";
-
-def ble_handle_st(_: int, data: bytearray):
-    global st_buffer
-    st_buffer += data.decode()
-    if "\n" in st_buffer:
-        log.info("st received: %s", st_buffer)
-        st_buffer = "";
-
-def ble_handle_disconnect(_: BleakClient):
-    log.info("Device was disconnected, goodbye.")
-    # cancelling all tasks effectively ends the program
-    for task in asyncio.all_tasks():
-        task.cancel()
-
-async def easywallbox():
-
-    log.info("Connecting BLE...")
-    #async with BleakClient(ble_address, disconnected_callback=ble_handle_disconnect) as ble_client:
-
-
-    async with BleakClient(ble_address) as client:
-        global ble_client 
-        ble_client = client;
-        log.info(f"Connected: {ble_client.is_connected}")
-
-        paired = await ble_client.pair(protection_level=2)
+    async def pair(self):
+        log.info("Pairing BLE...")
+        paired = await self._client.pair(protection_level=2)
         log.info(f"Paired: {paired}")
 
-        await ble_client.start_notify(BLUETOOTH_WALLBOX_TX, ble_handle_rx) #TX NOTIFY
+    async def start_notify(self):
+        await self._client.start_notify(self.WALLBOX_TX, self._notification_handler_rx) #TX NOTIFY
         log.info("TX NOTIFY STARTED")
-        await ble_client.start_notify(BLUETOOTH_WALLBOX_ST, ble_handle_st) #ST NOTIFY (CANAL BUSMODE)
+        await self._client.start_notify(self.WALLBOX_ST, self._notification_handler_st) #ST NOTIFY (CANAL BUSMODE)
         log.info("ST NOTIFY STARTED")
 
-        log.info("BLE AUTH START: %s", ble_pin)
+
+    
+
+    _notification_buffer_rx = ""
+    def _notification_handler_rx(self, sender, data):
+        global client
+        self._notification_buffer_rx += data.decode()
+        if "\n" in self._notification_buffer_rx:
+            log.info("_notification RX received: %s", self._notification_buffer_rx)
+
+            if (client):
+                client.publish(topic="easywallbox/message", payload=self._notification_buffer_rx, qos=1, retain=False)
+            #self._queue.put_nowait(self._notification_buffer_rx)
+            self._notification_buffer_rx = "";
+
+        #print(data.decode('utf-8'), end='', file=sys.stdout, flush=True)
+        #self._queue.put_nowait(data.decode('utf-8'))
+
+    _notification_buffer_st = ""
+    def _notification_handler_st(self, sender, data):
         
-        await ble_send_rx(commands.authBle(ble_pin))
-        #await asyncio.sleep(5)
+        self._notification_buffer_st += data.decode()
+        if "\n" in self._notification_buffer_st:
+            log.info("_notification ST received: %s", self._notification_buffer_st)
+            #self._queue.put_nowait(self._notification_buffer_st)
+            self._notification_buffer_st = "";
 
-        while True:
-            line = await queue.get()
-            log.info("Send ble from queue: %s" ,line)
-            await ble_send_rx(line)
-            await asyncio.sleep(0.5)
-            #loop forever
+        #print(data.decode('utf-8'), end='', file=sys.stdout, flush=True)
+        #self._queue.put_nowait(data.decode('utf-8'))
 
-        
-        
+async def main():
+    global client
+    mqtt_host = os.getenv('MQTT_HOST', '192.168.2.70')
+    mqtt_port = os.getenv('MQTT_PORT', 1883)
+    mqtt_username = os.getenv('MQTT_PORT', "")
+    mqtt_password = os.getenv('MQTT_PORT', "")
+
+    
+    queue = asyncio.Queue()
+
+    eb = EasyWallbox(queue)
+    await eb.connect()
+    await eb.pair()
+    await eb.start_notify()
+
+    log.info("BLE AUTH START: %s", eb.WALLBOX_PIN)
+    await eb.write(commands.authBle(eb.WALLBOX_PIN))
+
+    # The callback for when the client receives a CONNACK response from the server.
+    def on_connect(client, userdata, flags, rc):
+        print("Connected to MQTT Broker with result code "+str(rc))
+        client.connected_flag=True
+        log.info("Connected to MQTT Broker!")
+        # Subscribing in on_connect() means that if we lose the connection and
+        # reconnect then subscriptions will be renewed.
+        client.subscribe([("easywallbox/dpm",0), ("easywallbox/start",0), ("easywallbox/stop",0), ("easywallbox/limit",0)])
+
+    # The callback for when a PUBLISH message is received from the server.
+    def on_message(client, userdata, msg):
+        #print(msg.topic+" "+str(msg.payload))
+        #queue.put_nowait(msg.payload)
+        print(userdata)
+        print(msg)
+        topic = msg.topic
+        message = msg.payload.decode()
+        log.info(f"Message received [{topic}]: {message}")
+
+        ble_command = mqttmap.MQTT2BLE[topic][message](userdata)
+        print(ble_command)
+        if(topic == "easywallbox/dpm"):
+
+            if(message == "on"):
+                queue.put_nowait(commands.setDpmOn())
+            elif(message == "off"):
+                queue.put_nowait(commands.setDpmOff())
 
 
 
+    mqtt.Client.connected_flag=False
 
+    client = mqtt.Client("mqtt-easywallbox")
+    client.on_connect = on_connect
+    client.on_message = on_message
+    client.loop_start()
+    client.username_pw_set(username=mqtt_username,password=mqtt_password)
+    client.connect(mqtt_host, mqtt_port, 60)
 
-#clientMQTT.loop_stop()
-if __name__ == "__main__":
-    try:
-        paho.mqtt.client.Client.connected_flag=False#create flag in class
-
-        clientMQTT = paho.mqtt.client.Client("mqtt-easywallbox") # client ID "mqtt-test"
-        clientMQTT.on_connect = mqtt_on_connect
-        clientMQTT.on_message = mqtt_on_message
-        clientMQTT.loop_start()
-        log.info("Connecting to MQTT broker: %s ",mqtt_host)
-        clientMQTT.username_pw_set(username=mqtt_username,password=mqtt_password)
-        clientMQTT.connect(mqtt_host, mqtt_port)
-        #clientMQTT.loop_forever()  # Start networking daemon
-
-        while not clientMQTT.connected_flag: #wait in loop
-            log.info("...")
+    while not client.connected_flag: #wait in loop
+        log.info("...")
         time.sleep(1)
+    
 
-        asyncio.run(easywallbox())
+    loop = asyncio.get_event_loop()
 
-        clientMQTT.loop_stop()
+    #def read_line():
+    #    line = sys.stdin.readline()
+    #    if line:
+    #        queue.put_nowait(line)
 
-    except asyncio.CancelledError:
-        # task is cancelled on disconnect, so we ignore this error
-        pass
+    #task = loop.add_reader(sys.stdin.fileno(), read_line)
+
+
+    
+    while True:
+        if queue.empty():
+           pass
+        else:
+            #item = await queue.get()
+            item = queue.get_nowait()
+            log.info("Consuming ...")
+            if item is None:
+                log.info("nothing to consume!")
+                break
+            log.info(f"Consuming item {item}...")
+            await eb.write(item)
+        await asyncio.sleep(1)
+
+try:
+    asyncio.run(main())
+except asyncio.CancelledError:
+    pass
+#except Exception as e:
+#    print(str(e), file=sys.stderr, flush=True)
+#    sys.exit(1)
