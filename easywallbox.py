@@ -118,16 +118,16 @@ async def main():
     def on_message(client, userdata, msg):
         #print(msg.topic+" "+str(msg.payload))
         #queue.put_nowait(msg.payload)
-        print(userdata)
-        print(msg)
+
         topic = msg.topic
         message = msg.payload.decode()
         log.info(f"Message received [{topic}]: {message}")
         ble_command = None
-        
+
         try:
-            if(userdata != None):
-                ble_command = mqttmap.MQTT2BLE[topic][message](userdata)
+            if("/" in message):
+                msx = message.split("/") limit/10
+                ble_command = mqttmap.MQTT2BLE[topic][msx[0]](msx[1])
             else:
                 ble_command = mqttmap.MQTT2BLE[topic][message]
         except Exception:
