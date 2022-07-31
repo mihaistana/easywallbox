@@ -105,7 +105,8 @@ async def easywallbox():
         await ble_send_rx(commands.authBle(ble_pin))
         await asyncio.sleep(5)
 
-        #while True:
+        while True:
+            time.sleep(1)
             #loop forever
 
         
@@ -136,7 +137,7 @@ if __name__ == "__main__":
         asyncio.run(easywallbox())
 
         clientMQTT.loop_stop()
-        
+
     except asyncio.CancelledError:
         # task is cancelled on disconnect, so we ignore this error
         pass
