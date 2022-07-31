@@ -37,9 +37,9 @@ MQTT2BLE = {
     },
 
     "easywallbox/limit" : {
-        "dpm" : setDpmLimit,
-        "safe" : setSafeLimit,
-        "user" : setUserLimit,
+        "dpm/" : setDpmLimit,
+        "safe/" : setSafeLimit,
+        "user/" : setUserLimit,
     }
 }
 
