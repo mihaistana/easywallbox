@@ -56,7 +56,7 @@ async def wallbox_terminal(address):
         print(f"Paired: {paired}")
 
         await client.start_notify(BLUETOOTH_WALLBOX_TX, handle_rx)
-        await client.start_notify(BLUETOOTH_WALLBOX_ST, handle_ST)
+        await client.start_notify(BLUETOOTH_WALLBOX_ST, handle_st)
 
 
         print("Type command and press ENTER...")
