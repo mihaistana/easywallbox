@@ -1,6 +1,6 @@
 import sys
 import asyncio
-import commands
+import easywallbox.commands as commands
 
 from bleak import BleakClient
 
