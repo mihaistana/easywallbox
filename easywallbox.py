@@ -55,7 +55,7 @@ async def easywallbox(address):
         resp = await client.write_gatt_char(BLUETOOTH_WALLBOX_RX, data, response=True)
         print("BLE AUTH START:", PIN)
         print("BLE AUTH RESPONSE:", resp)
-        await asyncio.sleep(0.5, loop=loop)
+        await asyncio.sleep(0.5, result=b'$BLE,AUTH,OK\n')
         
 
 if __name__ == "__main__":
