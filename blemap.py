@@ -13,7 +13,7 @@ WALLBOX_ANSWERS = {
 }
 
 WALLBOX_BLE = { 
-    "LOGIN" : "$BLE,AUTH;{pin}\n", 
+    "LOGIN" : "$BLE,AUTH,{pin}\n", 
     "LOGOUT" : "$BLE,LOGOUT\n" 
 }
 
