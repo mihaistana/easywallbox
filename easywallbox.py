@@ -41,7 +41,7 @@ def mqtt_on_connect(client, userdata, flags, rc):
 def mqtt_subscribe(client):
     client.subscribe([("easywallbox/dpm",0), ("easywallbox/start",0), ("easywallbox/stop",0), ("easywallbox/limit",0)])
 
-def mqtt_on_message(client, userdata, msg):
+async def mqtt_on_message(client, userdata, msg):
     log.info(f"Message received [{msg.topic}]: {msg.payload}")
     topic = msg.topic
     message = msg.payload.decode()
