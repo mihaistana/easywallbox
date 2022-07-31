@@ -126,7 +126,7 @@ async def main():
 
         try:
             if("/" in message):
-                msx = message.split("/") limit/10
+                msx = message.split("/") #limit/10
                 ble_command = mqttmap.MQTT2BLE[topic][msx[0]](msx[1])
             else:
                 ble_command = mqttmap.MQTT2BLE[topic][message]
@@ -135,13 +135,8 @@ async def main():
 
         print(ble_command)
 
-        if(topic == "easywallbox/dpm"):
-
-            if(message == "on"):
-                queue.put_nowait(commands.setDpmOn())
-            elif(message == "off"):
-                queue.put_nowait(commands.setDpmOff())
-
+        #if(ble_command != None):
+        #    queue.put_nowait(commands.setDpmOn())
 
 
     mqtt.Client.connected_flag=False
