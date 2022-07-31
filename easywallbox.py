@@ -62,14 +62,14 @@ def ble_handle_rx(_: int, data: bytearray):
     global rx_buffer
     rx_buffer += data.decode()
     if "\n" in rx_buffer:
-        log.info("rx received:", rx_buffer)
+        log.info("rx received: %s", rx_buffer)
         rx_buffer = "";
 
 def ble_handle_st(_: int, data: bytearray):
     global st_buffer
     st_buffer += data.decode()
     if "\n" in st_buffer:
-        log.info("st received:", st_buffer)
+        log.info("st received: %s", st_buffer)
         st_buffer = "";
 
 def ble_handle_disconnect(_: BleakClient):
