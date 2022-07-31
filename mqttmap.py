@@ -1,20 +1,17 @@
 
 import blemap as bmap
 
-def limit(arg=0):
-    if(arg > 0):
-        limitValue = arg * 10
-        return bmap.WALLBOX_EPROM["SET_DPM_LIMIT"].format(limit = str(limitValue))
-    else:
-        return bmap.WALLBOX_EPROM["GET_DPM_LIMIT"]
-
+def limit(arg):
+    limitValue = int(arg) * 10
+    return bmap.WALLBOX_EPROM["SET_DPM_LIMIT"].format(limit = str(limitValue))
 
 
 MQTT2BLE = {
     "easywallbox/dpm" : {
         "on" : bmap.WALLBOX_EPROM["SET_DPM_ON"],
         "off" : bmap.WALLBOX_EPROM["SET_DPM_OFF"],
-        "limit" : limit, #limit/X (set) limit (get)
+        "limit" : bmap.WALLBOX_EPROM["GET_DPM_LIMIT"]
+        "limit/" : limit
         "status" : bmap.WALLBOX_EPROM["GET_DPM_STATUS"] #get status
     }
 }
