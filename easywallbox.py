@@ -45,7 +45,7 @@ def mqtt_on_message(client, userdata, msg):
     log.info(f"Message received [{msg.topic}]: {msg.payload}")
     if(msg.topic == "easywallbox/dpm"):
         if(msg.payload == "on"):
-            ble_send(commands.setDpmOff)
+            ble_send(commands.setDpmOn())
             #data = bytes(commands.setDpmOff,"utf-8")
             #await ble_client.write_gatt_char(BLUETOOTH_WALLBOX_RX, data)
 
@@ -93,7 +93,7 @@ async def easywallbox():
         await ble_client.start_notify(BLUETOOTH_WALLBOX_ST, ble_handle_st) #ST NOTIFY (CANAL BUSMODE)
         log.info("ST NOTIFY STARTED")
 
-        log.info("BLE AUTH START:", ble_pin)
+        log.info("BLE AUTH START: %s", ble_pin)
         data = bytes(commands.authBle(ble_pin),"utf-8")
         resp = await ble_client.write_gatt_char(BLUETOOTH_WALLBOX_RX, data, response=True)
         await asyncio.sleep(5)
