@@ -112,7 +112,7 @@ async def main():
         log.info("Connected to MQTT Broker!")
         # Subscribing in on_connect() means that if we lose the connection and
         # reconnect then subscriptions will be renewed.
-        client.subscribe([("easywallbox/dpm",0), ("easywallbox/start",0), ("easywallbox/stop",0), ("easywallbox/limit",0)])
+        client.subscribe([("easywallbox/dpm",0), ("easywallbox/charge",0), ("easywallbox/limit",0)])
 
     # The callback for when a PUBLISH message is received from the server.
     def on_message(client, userdata, msg):

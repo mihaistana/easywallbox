@@ -16,7 +16,7 @@ WALLBOX_BLE = {
 
 WALLBOX_COMMANDS = { 
     "START_CHARGE" : "$CMD,CHARGE,START,{delay}\n", 
-    "STOP_CHARGE" : "$CMD,CHARGE,STOP,0\n" 
+    "STOP_CHARGE" : "$CMD,CHARGE,STOP,{delay}\n" 
 }
 
 
