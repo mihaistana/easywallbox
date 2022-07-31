@@ -52,7 +52,7 @@ async def easywallbox(address):
         print("ST NOTIFY STARTED")
 
         data = bytes(commands.authBle(PIN),"utf-8")
-        resp = await client.write_gatt_char(BLUETOOTH_WALLBOX_RX, data, response=True)
+        resp =  client.write_gatt_char(BLUETOOTH_WALLBOX_RX, data, response=True)
         print("BLE AUTH START:", PIN)
         print("BLE AUTH RESPONSE:", resp)
         #await asyncio.sleep(10)
