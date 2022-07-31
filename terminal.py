@@ -37,11 +37,7 @@ async def wallbox_terminal(address):
     #async with BleakClient(address) as client:
         print(f"Connected: {client.is_connected}")
 
-        
-        await client.write_gatt_char(BLUETOOTH_WALLBOX_SERVICE, BLE_AUTH)
-        print("sent:", BLE_AUTH)
-
-        paired = await client.pair(protection_level=2)
+        paired = await client.pair(protection_level=1)
         print(f"Paired: {paired}")
 
         await client.start_notify(BLUETOOTH_WALLBOX_TX, handle_rx)
