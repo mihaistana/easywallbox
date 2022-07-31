@@ -100,29 +100,31 @@ async def easywallbox():
 
         #while True:
             #loop forever
+
+        paho.mqtt.client.Client.connected_flag=False#create flag in class
+
+        clientMQTT = paho.mqtt.client.Client("mqtt-easywallbox") # client ID "mqtt-test"
+        clientMQTT.on_connect = mqtt_on_connect
+        clientMQTT.on_message = mqtt_on_message
+        #clientMQTT.loop_start()
+        log.info("Connecting to MQTT broker: %s ",mqtt_host)
+        clientMQTT.username_pw_set(username=mqtt_username,password=mqtt_password)
+        clientMQTT.connect(mqtt_host, mqtt_port)
+        clientMQTT.loop_forever()  # Start networking daemon
+
+        while not clientMQTT.connected_flag: #wait in loop
+            log.info("...")
+        time.sleep(1)
         
-paho.mqtt.client.Client.connected_flag=False#create flag in class
 
-clientMQTT = paho.mqtt.client.Client("mqtt-easywallbox") # client ID "mqtt-test"
-clientMQTT.on_connect = mqtt_on_connect
-clientMQTT.on_message = mqtt_on_message
-#clientMQTT.loop_start()
-log.info("Connecting to MQTT broker: %s ",mqtt_host)
-clientMQTT.username_pw_set(username=mqtt_username,password=mqtt_password)
-clientMQTT.connect(mqtt_host, mqtt_port)
-clientMQTT.loop_forever()  # Start networking daemon
 
-while not clientMQTT.connected_flag: #wait in loop
-    log.info("...")
-time.sleep(1)
-log.info("START BLE...")
 
-asyncio.run(easywallbox())
+
 
 #clientMQTT.loop_stop()
-#if __name__ == "__main__":
-    #try:
-    #asyncio.run(easywallbox())
-    #except asyncio.CancelledError:
+if __name__ == "__main__":
+    try:
+        asyncio.run(easywallbox())
+    except asyncio.CancelledError:
         # task is cancelled on disconnect, so we ignore this error
-    #    pass
+        pass
