@@ -41,13 +41,13 @@ def mqtt_on_connect(client, userdata, flags, rc):
 def mqtt_subscribe(client):
     client.subscribe([("easywallbox/dpm",0), ("easywallbox/start",0), ("easywallbox/stop",0), ("easywallbox/limit",0)])
 
-async def mqtt_on_message(client, userdata, msg):
+def mqtt_on_message(client, userdata, msg):
     log.info(f"Message received [{msg.topic}]: {msg.payload}")
     topic = msg.topic
     message = msg.payload.decode()
     if(topic == "easywallbox/dpm"):
         if(message == "on"):
-            await ble_send(commands.setDpmOn())
+            asyncio.run(ble_send(commands.setDpmOn())) 
             #data = bytes(commands.setDpmOff,"utf-8")
             #await ble_client.write_gatt_char(BLUETOOTH_WALLBOX_RX, data)
 
