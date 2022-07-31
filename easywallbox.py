@@ -128,7 +128,7 @@ async def main():
             if("/" in message):
                 msx = message.split("/") #limit/10
             
-            if(msx && len(msx) == 2): 
+            if(msx and len(msx) == 2): 
                 ble_command = mqttmap.MQTT2BLE[topic][msx[0]+"/"](msx[1])
             else:
                 ble_command = mqttmap.MQTT2BLE[topic][message]
