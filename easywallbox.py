@@ -47,7 +47,7 @@ def mqtt_on_message(client, userdata, msg):
     message = msg.payload.decode()
     if(topic == "easywallbox/dpm"):
         if(message == "on"):
-            ble_send(commands.setDpmOn())
+            ble_send_rx(commands.setDpmOn())
             #data = bytes(commands.setDpmOff,"utf-8")
             #await ble_client.write_gatt_char(BLUETOOTH_WALLBOX_RX, data)
 
@@ -67,6 +67,7 @@ def ble_handle_rx(_: int, data: bytearray):
     rx_buffer += data.decode()
     if "\n" in rx_buffer:
         log.info("rx received: %s", rx_buffer)
+        clientMQTT.publish(topic="easywallbox/message", payload=rx_buffer, qos=1, retain=False)
         rx_buffer = "";
 
 def ble_handle_st(_: int, data: bytearray):
