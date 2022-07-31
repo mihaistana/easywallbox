@@ -37,9 +37,22 @@ MQTT2BLE = {
     },
 
     "easywallbox/limit" : {
+        "dpm" : bmap.WALLBOX_EPROM["GET_DPM_LIMIT"],
         "dpm/" : setDpmLimit,
+        "safe" : bmap.WALLBOX_EPROM["GET_SAFE_LIMIT"],
         "safe/" : setSafeLimit,
+        "user" : bmap.WALLBOX_EPROM["GET_USER_LIMIT"],
         "user/" : setUserLimit,
+    },
+
+    "easywallbox/read" : {
+        #"READ_ALARMS" : "$EEP,READ,AL\n",
+        "manufacturing" : bmap.WALLBOX_EPROM["READ_MANUFACTURING"],
+        #"READ_SESSIONS" : "$EEP,READ,SL\n",
+        "settings" : bmap.WALLBOX_EPROM["READ_SETTINGS"],
+        "app_data" : bmap.WALLBOX_EPROM["READ_APP_DATA"],
+        "hw_settings" : bmap.WALLBOX_EPROM["READ_HW_SETTINGS"],
+        "voltage" : bmap.WALLBOX_EPROM["READ_SUPPLY_VOLTAGE"]
     }
 }
 
