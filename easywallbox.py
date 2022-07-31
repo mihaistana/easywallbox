@@ -53,6 +53,7 @@ def mqtt_on_message(client, userdata, msg):
 async def ble_send(data):
     data = bytes(data,"utf-8")
     await ble_client.write_gatt_char(BLUETOOTH_WALLBOX_RX, data)
+    log.info("ble sent: %s", data)
 
 rx_buffer = "";
 st_buffer = "";
