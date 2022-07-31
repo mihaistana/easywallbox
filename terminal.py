@@ -48,8 +48,8 @@ def handle_disconnect(_: BleakClient):
 
 async def wallbox_terminal(address):
 
-    async with BleakClient(address, disconnected_callback=handle_disconnect) as client:
-    #async with BleakClient(address) as client:
+    #async with BleakClient(address, disconnected_callback=handle_disconnect) as client:
+    async with BleakClient(address) as client:
         print(f"Connected: {client.is_connected}")
 
         paired = await client.pair(protection_level=1)
