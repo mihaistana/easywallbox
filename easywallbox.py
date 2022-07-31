@@ -51,6 +51,8 @@ async def easywallbox(address):
         data = bytes(commands.authBle("9844"),"utf-8")
         await client.write_gatt_char(BLUETOOTH_WALLBOX_RX, data)
         print("sent:", data)
+
+        await asyncio.sleep(5)
         
 
 if __name__ == "__main__":
