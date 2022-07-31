@@ -123,9 +123,18 @@ async def main():
         topic = msg.topic
         message = msg.payload.decode()
         log.info(f"Message received [{topic}]: {message}")
+        ble_command = None
+        
+        try:
+            if(userdata != None):
+                ble_command = mqttmap.MQTT2BLE[topic][message](userdata)
+            else:
+                ble_command = mqttmap.MQTT2BLE[topic][message]
+        except Exception:
+            pass
 
-        ble_command = mqttmap.MQTT2BLE[topic][message](userdata)
         print(ble_command)
+
         if(topic == "easywallbox/dpm"):
 
             if(message == "on"):
