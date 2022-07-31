@@ -28,16 +28,18 @@ MQTT2BLE = {
         "limit/" : setDpmLimit,
         "status" : bmap.WALLBOX_EPROM["GET_DPM_STATUS"] #get status
     },
+
     "easywallbox/charge" : {
-        "start" : startCharge
-        "start/" : startCharge
-        "stop" : stopCharge
-        "stop/" : stopCharge
+        "start" : startCharge,
+        "start/" : startCharge,
+        "stop" : stopCharge,
+        "stop/" : stopCharge,
     },
+
     "easywallbox/limit" : {
         "dpm" : setDpmLimit,
-        "safe" : setSafeLimit
-        "user" : setUserLimit
+        "safe" : setSafeLimit,
+        "user" : setUserLimit,
     }
 }
 
