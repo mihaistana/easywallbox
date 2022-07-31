@@ -33,7 +33,7 @@ def handle_rx(_: int, data: bytearray):
         print("rx received: %s", rx_buffer)
         rx_buffer = "";
 
-def ble_handle_st(_: int, data: bytearray):
+def handle_st(_: int, data: bytearray):
     global st_buffer
     st_buffer += data.decode()
     if "\n" in st_buffer:
