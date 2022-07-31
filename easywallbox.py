@@ -28,6 +28,8 @@ mqtt_port = os.getenv('MQTT_PORT', 1883)
 mqtt_username = os.getenv('MQTT_PORT', "")
 mqtt_password = os.getenv('MQTT_PORT', "")
 
+queue = asyncio.Queue()
+
 def synchronize_async_helper(to_await):
     async_response = []
 
@@ -59,7 +61,7 @@ def mqtt_on_message(client, userdata, msg):
     message = msg.payload.decode()
     if(topic == "easywallbox/dpm"):
         if(message == "on"):
-            await ble_send_rx(commands.setDpmOn())
+            queue.put_nowait(commands.setDpmOn())
             #data = bytes(commands.setDpmOff,"utf-8")
             #await ble_client.write_gatt_char(BLUETOOTH_WALLBOX_RX, data)
 
@@ -99,6 +101,8 @@ async def easywallbox():
 
     log.info("Connecting BLE...")
     #async with BleakClient(ble_address, disconnected_callback=ble_handle_disconnect) as ble_client:
+
+
     async with BleakClient(ble_address) as client:
         global ble_client 
         ble_client = client;
@@ -118,7 +122,10 @@ async def easywallbox():
         #await asyncio.sleep(5)
 
         while True:
-            await asyncio.sleep(1)
+            line = await queue.get()
+            print(line)
+            #await ble_send_rx(line)
+            #await asyncio.sleep(1)
             #loop forever
 
         
