@@ -15,16 +15,17 @@ BLUETOOTH_WALLBOX_UUID ="0A8C44F5-F80D-8141-6618-2564F1881650";
 rx_buffer = "";
 st_buffer = "";
 
+
 def handle_rx(_: int, data: bytearray):
     global rx_buffer
     rx_buffer += data.decode()
-    print("rx buffer:", rx_buffer)
     if "\n" in rx_buffer:
         print("rx received:", rx_buffer)
         rx_buffer = "";
 
 def handle_st(_: int, data: bytearray):
-    st_buffer = st_buffer + data
+    global st_buffer
+    st_buffer += data.decode()
     if "\n" in st_buffer:
         print("st received:", st_buffer)
         st_buffer = "";
@@ -46,14 +47,14 @@ async def easywallbox(address):
 
         await client.start_notify(BLUETOOTH_WALLBOX_TX, handle_rx) #TX NOTIFY
         print("TX NOTIFY STARTED")
-        #await client.start_notify(BLUETOOTH_WALLBOX_ST, handle_st) #ST NOTIFY (CANAL BUSMODE)
-        #print("ST NOTIFY STARTED")
+        await client.start_notify(BLUETOOTH_WALLBOX_ST, handle_st) #ST NOTIFY (CANAL BUSMODE)
+        print("ST NOTIFY STARTED")
 
         data = bytes(commands.authBle("9844"),"utf-8")
         await client.write_gatt_char(BLUETOOTH_WALLBOX_RX, data)
         print("sent:", data)
 
-        await asyncio.sleep(5)
+        #await asyncio.sleep(5)
         
 
 if __name__ == "__main__":
