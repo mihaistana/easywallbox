@@ -107,7 +107,7 @@ async def easywallbox():
         #await asyncio.sleep(5)
 
         while True:
-            asyncio.sleep(1)
+            await asyncio.sleep(1)
             #loop forever
 
         
