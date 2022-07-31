@@ -28,6 +28,18 @@ mqtt_port = os.getenv('MQTT_PORT', 1883)
 mqtt_username = os.getenv('MQTT_PORT', "")
 mqtt_password = os.getenv('MQTT_PORT', "")
 
+def synchronize_async_helper(to_await):
+    async_response = []
+
+    async def run_and_capture_result():
+        r = await to_await
+        async_response.append(r)
+
+    loop = asyncio.get_event_loop()
+    coroutine = run_and_capture_result()
+    loop.run_until_complete(coroutine)
+    return async_response[0]
+
 def mqtt_on_connect(client, userdata, flags, rc):
     # This will be called once the client connects
     if rc == 0:
@@ -47,8 +59,8 @@ def mqtt_on_message(client, userdata, msg):
     message = msg.payload.decode()
     if(topic == "easywallbox/dpm"):
         if(message == "on"):
-            await asyncio.ensure_future(ble_send_rx(commands.setDpmOn()))
-            
+            ressync = synchronize_async_helper(ble_send_rx(commands.setDpmOn()))
+            print(ressync);
             #data = bytes(commands.setDpmOff,"utf-8")
             #await ble_client.write_gatt_char(BLUETOOTH_WALLBOX_RX, data)
 
