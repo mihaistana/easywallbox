@@ -47,7 +47,7 @@ def mqtt_on_message(client, userdata, msg):
     message = msg.payload.decode()
     if(topic == "easywallbox/dpm"):
         if(message == "on"):
-            ble_send(commands.setDpmOn())
+            await ble_send(commands.setDpmOn())
             #data = bytes(commands.setDpmOff,"utf-8")
             #await ble_client.write_gatt_char(BLUETOOTH_WALLBOX_RX, data)
 
