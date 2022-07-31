@@ -1,8 +1,8 @@
 
 import blemap as bmap
 
-def limit(arg):
-    if(arg):
+def limit(arg=0):
+    if(arg > 0):
         limitValue = arg * 10
         return bmap.WALLBOX_EPROM["SET_DPM_LIMIT"].format(limit = str(limitValue))
     else:
