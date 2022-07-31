@@ -17,10 +17,10 @@ st_buffer = "";
 
 def handle_rx(_: int, data: bytearray):
     print("rx:", data)
-    #rx_buffer = rx_buffer + str(data)
-    #if "\n" in rx_buffer:
-    #    print("rx received:", rx_buffer)
-    #    rx_buffer = "";
+    rx_buffer = rx_buffer + str(data)
+    if "\n" in rx_buffer:
+        print("rx received:", rx_buffer)
+        rx_buffer = "";
 
 def handle_st(_: int, data: bytearray):
     st_buffer = st_buffer + data
@@ -56,8 +56,8 @@ async def easywallbox(address):
         
 
 if __name__ == "__main__":
-    try:
-        asyncio.run(easywallbox(sys.argv[1] if len(sys.argv) == 2 else ADDRESS))
-    except asyncio.CancelledError:
+    #try:
+    asyncio.run(easywallbox(sys.argv[1] if len(sys.argv) == 2 else ADDRESS))
+    #except asyncio.CancelledError:
         # task is cancelled on disconnect, so we ignore this error
-        pass
+    #    pass
