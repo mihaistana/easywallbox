@@ -17,10 +17,10 @@ st_buffer = "";
 
 def handle_rx(_: int, data: bytearray):
     print("rx:", data)
-    rx_buffer = rx_buffer + str(data)
-    if "\n" in rx_buffer:
-        print("rx received:", rx_buffer)
-        rx_buffer = "";
+    #rx_buffer = rx_buffer + str(data)
+    #if "\n" in rx_buffer:
+    #    print("rx received:", rx_buffer)
+    #    rx_buffer = "";
 
 def handle_st(_: int, data: bytearray):
     st_buffer = st_buffer + data
