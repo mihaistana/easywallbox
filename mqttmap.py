@@ -30,9 +30,9 @@ MQTT2BLE = {
     },
 
     "easywallbox/charge" : {
-        "start" : startCharge,
+        "start" : startCharge(0),
         "start/" : startCharge,
-        "stop" : stopCharge,
+        "stop" : stopCharge(0),
         "stop/" : stopCharge,
     },
 
