@@ -22,8 +22,23 @@ SET_DPM_ON = "$EEP,WRITE,IDX,178,1\n";
 
 BLE_AUTH = b'$BLE,AUTH,9844\n'
 
+rx_buffer = "";
+st_buffer = "";
+
+
 def handle_rx(_: int, data: bytearray):
-        print("received:", data)
+    global rx_buffer
+    rx_buffer += data.decode()
+    if "\n" in rx_buffer:
+        print("rx received: %s", rx_buffer)
+        rx_buffer = "";
+
+def ble_handle_st(_: int, data: bytearray):
+    global st_buffer
+    st_buffer += data.decode()
+    if "\n" in st_buffer:
+        print("st received: %s", st_buffer)
+        st_buffer = "";
 
 def handle_disconnect(_: BleakClient):
         print("Device was disconnected, goodbye.")
@@ -41,6 +56,7 @@ async def wallbox_terminal(address):
         print(f"Paired: {paired}")
 
         await client.start_notify(BLUETOOTH_WALLBOX_TX, handle_rx)
+        await client.start_notify(BLUETOOTH_WALLBOX_ST, handle_ST)
 
 
         print("Type command and press ENTER...")
