@@ -4,8 +4,6 @@ import time
 import sys
 import asyncio
 import commands as commands
-import mqtt
-import ble
 import os
 from bleak import BleakClient
 
