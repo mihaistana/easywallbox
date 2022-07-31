@@ -43,12 +43,18 @@ async def easywallbox(address):
         print(f"Paired: {paired}")
 
         await client.start_notify(BLUETOOTH_WALLBOX_TX, handle_rx) #TX NOTIFY
+        print("TX NOTIFY STARTED")
         await client.start_notify(BLUETOOTH_WALLBOX_ST, handle_st) #ST NOTIFY (CANAL BUSMODE)
-        
+        print("ST NOTIFY STARTED")
+
         data = bytes(commands.authBle("9844"),"utf-8")
         await client.write_gatt_char(BLUETOOTH_WALLBOX_RX, data)
-        
+        print("sent:", data)
         
 
 if __name__ == "__main__":
-    easywallbox(sys.argv[1] if len(sys.argv) == 2 else ADDRESS)
+    try:
+        asyncio.run(easywallbox(sys.argv[1] if len(sys.argv) == 2 else ADDRESS))
+    except asyncio.CancelledError:
+        # task is cancelled on disconnect, so we ignore this error
+        pass
