@@ -91,8 +91,8 @@ async def main():
     global client
     mqtt_host = os.getenv('MQTT_HOST', '192.168.2.70')
     mqtt_port = os.getenv('MQTT_PORT', 1883)
-    mqtt_username = os.getenv('MQTT_PORT', "")
-    mqtt_password = os.getenv('MQTT_PORT', "")
+    mqtt_username = os.getenv('MQTT_USERNAME', "")
+    mqtt_password = os.getenv('MQTT_PASSWORD', "")
 
     
     queue = asyncio.Queue()
