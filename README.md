@@ -50,20 +50,20 @@ Open your camera / QR Code reader and point it to the sticker. You will get some
 
 BT:N:2911AA00101728;M:F2ME.EWE08APEFXX;D:eWB01728;P:001234;A:9844;;
 
-Let's decode it:
-
-N: Serial               2911AA00101728
-M: Part Number          F2ME.EWE08APEFXX
-D: BT Name              eWB01728
-P: Device Pin           001234
-A: BLE Pin              9844
-
-We need the A: value, in my case it's "9844" (save it for later)
-
-## MQTT Commands ##
-
-easywallbox/dpm 
-
+Let's decode it:  
+  
+N: Serial               2911AA00101728  
+M: Part Number          F2ME.EWE08APEFXX  
+D: BT Name              eWB01728  
+P: Device Pin           001234  
+A: BLE Pin              9844  
+  
+We need the A: value, in my case it's "9844" (save it for later)  
+  
+## MQTT Commands ##  
+  
+easywallbox/dpm  
+  
 | Description    | MQTT Command  |
 |----------------| ------------- |
 | Turn On DPM    | easywallbox/dpm/on |
@@ -107,8 +107,9 @@ All the responses are sent to MQTT under **easywallbox/message**
 
 ## Edit docker-compose.yaml
 
-Update the file with your values
-
+Update the file with your values  
+  
+<pre>
 easywallbox:
     container_name: easywallbox
     restart: unless-stopped
@@ -118,8 +119,8 @@ easywallbox:
       - MQTT_HOST=192.168.2.70
       - WALLBOX_ADDRESS = "00:00:00:00:00"
       - WALLBOX_PIN = "9844"
-
-
+</pre>  
+  
 ## BLE Available commands
 
 **Login / Logout**
