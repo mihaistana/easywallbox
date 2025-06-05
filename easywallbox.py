@@ -48,7 +48,7 @@ class EasyWallbox:
 
     async def pair(self):
         log.info("Pairing BLE...")
-        paired = await self._client.pair(protection_level=2)
+        paired = sys.platform == "darwin" or await self._client.pair(protection_level=2)
         log.info(f"Paired: {paired}")
 
     async def start_notify(self):

@@ -52,7 +52,7 @@ async def wallbox_terminal(address):
     async with BleakClient(address) as client:
         print(f"Connected: {client.is_connected}")
 
-        paired = await client.pair(protection_level=1)
+        paired = sys.platform == "darwin" or await client.pair(protection_level=1)
         print(f"Paired: {paired}")
 
         await client.start_notify(BLUETOOTH_WALLBOX_TX, handle_rx)
